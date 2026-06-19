@@ -2,10 +2,13 @@ package com.assignment1.LibraryInfoDisplay.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.assignment1.LibraryInfoDisplay.model.Book;
@@ -27,11 +30,26 @@ public class BookController {
         return bookService.getBookById(id);
     }
     @GetMapping("/author/{authorName}")
-    public Book getBookInfoByAuthor(@PathVariable String authorName){
+    public List<Book> getBookInfoByAuthor(@PathVariable String authorName){
         return bookService.getBookByAuthor(authorName);
     }
-    @GetMapping("/")
-    public List<Book> getBookInfoByCategory(@RequestParam String category){
+    @GetMapping("/category/{category}")
+    public List<Book> getBookInfoByCategory(@PathVariable String category){
         return bookService.getBooksByCategory(category);
+    }
+    @PostMapping
+    public Book addBook(@RequestBody Book book){
+        return bookService.addBook(book);
+    }
+
+    @PutMapping("/{id}")
+    public Book updateBook(@PathVariable int id,
+                           @RequestBody Book book){
+        return bookService.updateBook(id, book);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean deleteBook(@PathVariable int id){
+        return bookService.deleteBook(id);
     }
 }

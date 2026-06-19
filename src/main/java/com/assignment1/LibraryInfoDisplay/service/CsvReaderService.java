@@ -1,6 +1,9 @@
 package com.assignment1.LibraryInfoDisplay.service;
 
 import com.assignment1.LibraryInfoDisplay.model.Book;
+
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -9,21 +12,20 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 @Service
 public class CsvReaderService {
-
+    private static final String CSV_PATH = "data/books_catalog.csv";
     public List<Book> readBooks() {
 
         List<Book> books = new ArrayList<>();
 
         try {
 
-            ClassPathResource resource =
-                    new ClassPathResource("books_catalog.csv");
-
-            BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(resource.getInputStream()));
+            BufferedReader reader = new BufferedReader(new java.io.FileReader(CSV_PATH));
 
             String line;
             reader.readLine();
@@ -54,34 +56,89 @@ public class CsvReaderService {
 
         return books;
     }
+
+    private List<Book> books;
+    @PostConstruct
+    public void init() {
+     books = readBooks();
+    }   
     public Book readBookById(int id){
-        List<Book> books = readBooks();
-
-        for(Book book : books) {
-            if(book.getId() == id) {
-                return book;
-            }
-        }
-
-    return null;
+        return books.stream().filter(book->book.getId()==id).findFirst().orElse(null);
     }
-    public Book readBookByAuthor(String authorName){
-        List<Book> books = readBooks();
-        for(Book book: books){
-            if(book.getAuthorName().equals(authorName)){
-                return book;
-            }
-        }
-        return null;
+    public List<Book> readBookByAuthor(String authorName){
+        return books.stream().filter(book->book.getAuthorName().equalsIgnoreCase(authorName)).toList();
     }
     public List<Book> readBooksByCategory(String category){
-        List<Book> books = readBooks();
-        List<Book> result = new ArrayList<>();
-        for(Book book: books){
-            if(book.getCategory().equals(category)){
-                result.add(book);
-            }
-        }
-        return result;
+        return books.stream().filter(book->book.getCategory().equalsIgnoreCase(category)).toList();
     }
+    public List<Book> getAllBooks(){
+        return books;
+    }
+    public Book addBook(Book book){
+        int nextId = books.stream().mapToInt(Book::getId).max().orElse(0) + 1;
+        book.setId(nextId);
+        books.add(book);
+        saveBooksToCsv();
+        return book;
+    }
+    public Book updateBook(int id, Book updatedBook){
+
+        Book existingBook = readBookById(id);
+        if(existingBook == null){
+            return null;
+        }
+        existingBook.setBookName(updatedBook.getBookName());
+        existingBook.setAuthorName(updatedBook.getAuthorName());
+        existingBook.setCategory(updatedBook.getCategory());
+        existingBook.setPublisher(updatedBook.getPublisher());
+        existingBook.setPrice(updatedBook.getPrice());
+        existingBook.setQuantity(updatedBook.getQuantity());
+        existingBook.setPublishedYear(updatedBook.getPublishedYear());
+        existingBook.setIsbn(updatedBook.getIsbn());
+        existingBook.setLanguage(updatedBook.getLanguage());
+        saveBooksToCsv();
+        return existingBook;
+    }
+    public boolean deleteBook(int id){
+        boolean deleted = books.removeIf(book -> book.getId() == id);
+        if(deleted) {
+            saveBooksToCsv();
+        }
+
+        return deleted;    
+    }
+    private void saveBooksToCsv() {
+
+    try {
+
+        PrintWriter writer =new PrintWriter(new FileWriter(CSV_PATH));
+
+        writer.println("id,bookName,authorName,category,publisher,price,quantity,publishedYear,isbn,language");
+
+        for(Book book : books) {
+
+            writer.println(
+                    book.getId() + "," +
+                    book.getBookName() + "," +
+                    book.getAuthorName() + "," +
+                    book.getCategory() + "," +
+                    book.getPublisher() + "," +
+                    book.getPrice() + "," +
+                    book.getQuantity() + "," +
+                    book.getPublishedYear() + "," +
+                    book.getIsbn() + "," +
+                    book.getLanguage()
+            );
+        }
+
+        writer.close();
+
+    }
+    catch(Exception e) {
+        throw new RuntimeException(
+                "Error saving CSV file",
+                e);
+    }
+    
+}
 }

@@ -18,10 +18,20 @@ public class BookService {
     public Book getBookById(int id){
         return csvReaderService.readBookById(id);
     }
-    public Book getBookByAuthor(String authorName){
+    public List<Book> getBookByAuthor(String authorName){
         return csvReaderService.readBookByAuthor(authorName);
     }
     public List<Book> getBooksByCategory(String category){
         return csvReaderService.readBooksByCategory(category);
+    }
+    public Book addBook(Book book){
+        return csvReaderService.addBook(book);
+    }
+    public Book updateBook(int id, Book book){
+        return csvReaderService.updateBook(id, book);
+    }
+
+    public boolean deleteBook(int id){
+        return csvReaderService.deleteBook(id);
     }
 }

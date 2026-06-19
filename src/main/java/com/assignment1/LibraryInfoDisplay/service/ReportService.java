@@ -3,6 +3,8 @@ package com.assignment1.LibraryInfoDisplay.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -54,5 +56,14 @@ public class ReportService {
         report.setOldestPublishedBook(books.stream().min(Comparator.comparingInt(Book::getPublishedYear)).orElse(null));
 
     return report;
+    }
+    public Map<String, List<Book>> groupByCategory(){
+        return csvReaderService.getAllBooks().stream().collect(Collectors.groupingBy(Book::getCategory));
+    }
+    public Map<String, List<Book>> groupByPublisher(){
+        return csvReaderService.getAllBooks().stream().collect(Collectors.groupingBy(Book::getPublisher));
+    }
+    public Map<String, List<Book>> groupByLanguage(){
+        return csvReaderService.getAllBooks().stream().collect(Collectors.groupingBy(Book::getLanguage));
     }
 }
