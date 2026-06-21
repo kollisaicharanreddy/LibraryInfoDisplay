@@ -48,6 +48,7 @@ public class CsvReaderService {
 
                 books.add(book);
             }
+            reader.close();
             log.info("Successfully loaded {} books", books.size());
         } catch (Exception e) {
             log.error("Error reading CSV file", e);
