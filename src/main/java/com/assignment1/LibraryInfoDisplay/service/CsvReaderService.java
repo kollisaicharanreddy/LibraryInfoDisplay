@@ -3,24 +3,23 @@ package com.assignment1.LibraryInfoDisplay.service;
 import com.assignment1.LibraryInfoDisplay.model.Book;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
+@Slf4j
 @Service
 public class CsvReaderService {
     private static final String CSV_PATH = "data/books_catalog.csv";
     public List<Book> readBooks() {
-
+        log.info("Reading books from CSV file");
         List<Book> books = new ArrayList<>();
 
         try {
@@ -49,8 +48,9 @@ public class CsvReaderService {
 
                 books.add(book);
             }
-
+            log.info("Successfully loaded {} books", books.size());
         } catch (Exception e) {
+            log.error("Error reading CSV file", e);
             throw new RuntimeException("Error reading CSV file", e);
         }
 
@@ -61,6 +61,7 @@ public class CsvReaderService {
     @PostConstruct
     public void init() {
      books = readBooks();
+     log.info("Loaded {} books from CSV file", books.size());
     }   
     public Book readBookById(int id){
         return books.stream().filter(book->book.getId()==id).findFirst().orElse(null);
@@ -79,12 +80,14 @@ public class CsvReaderService {
         book.setId(nextId);
         books.add(book);
         saveBooksToCsv();
+        log.info("Added new book with id {} and title {}", book.getId(), book.getBookName());
         return book;
     }
     public Book updateBook(int id, Book updatedBook){
-
+        log.info("Updating book with id {}", id);
         Book existingBook = readBookById(id);
         if(existingBook == null){
+            log.warn("Book with id {} not found", id);
             return null;
         }
         existingBook.setBookName(updatedBook.getBookName());
@@ -97,18 +100,21 @@ public class CsvReaderService {
         existingBook.setIsbn(updatedBook.getIsbn());
         existingBook.setLanguage(updatedBook.getLanguage());
         saveBooksToCsv();
+        log.info("Book with id {} updated successfully", id);
         return existingBook;
     }
     public boolean deleteBook(int id){
         boolean deleted = books.removeIf(book -> book.getId() == id);
-        if(deleted) {
-            saveBooksToCsv();
+        if(deleted){
+            log.info("Book with id {} deleted successfully", id);
         }
-
+        else{
+            log.warn("Book with id {} not found", id);
+        }
         return deleted;    
     }
     private void saveBooksToCsv() {
-
+        log.info("Saving books to CSV file");
     try {
 
         PrintWriter writer =new PrintWriter(new FileWriter(CSV_PATH));
@@ -130,14 +136,13 @@ public class CsvReaderService {
                     book.getLanguage()
             );
         }
-
+        log.info("Successfully saved {} books to CSV", books.size());
         writer.close();
 
     }
     catch(Exception e) {
-        throw new RuntimeException(
-                "Error saving CSV file",
-                e);
+        log.error("Error saving CSV file", e);
+        throw new RuntimeException("Error saving CSV file", e);
     }
     
 }

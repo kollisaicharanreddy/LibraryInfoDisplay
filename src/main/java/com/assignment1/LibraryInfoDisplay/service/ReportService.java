@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import com.assignment1.LibraryInfoDisplay.dto.LibraryReportDTO;
 import com.assignment1.LibraryInfoDisplay.model.Book;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class ReportService {
 
@@ -21,7 +24,7 @@ public class ReportService {
     }
 
     public LibraryReportDTO generateReport() {
-
+        log.info("Generating library report");
         List<Book> books = csvReaderService.readBooks();
 
         LibraryReportDTO report =
@@ -54,7 +57,7 @@ public class ReportService {
         report.setLatestPublishedBook(books.stream().max(Comparator.comparingInt(Book::getPublishedYear)).orElse(null));
 
         report.setOldestPublishedBook(books.stream().min(Comparator.comparingInt(Book::getPublishedYear)).orElse(null));
-
+        log.info("Library report generated successfully");
     return report;
     }
     public Map<String, List<Book>> groupByCategory(){
